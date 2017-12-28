@@ -48,12 +48,15 @@ public class SQSClient {
 
     messages.stream()
         .map(Message::getBody)
-        .map(SnsTopic::new)
+        .map(SnsTopic::fromJson)
         .forEach(notification -> {
           System.out.println("Timestamp --> " + notification.getTimestamp());
           // SesFeedback sesNotification = new SesFeedback(notification.getMessage());
 //          SesFeedback sesNotification = notification.getMessage();
           System.out.println("SES Notification String --> " + notification.getMessage());
+
+          SesFeedback feedback = SesFeedback.fromJson(notification.getMessage());
+          System.out.println("SES Feedback Notification -> " + feedback.getNotificationType());
         });
 
     // https://forums.aws.amazon.com/thread.jspa?messageID=607800

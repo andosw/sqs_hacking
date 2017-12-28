@@ -2,6 +2,7 @@ package com.seana;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -9,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SnsTopic {
+
+  private static final ObjectMapper mapper = customObjectMapper(new ObjectMapper());
+
   @JsonProperty("MessageId")
   private String messageId;
 
@@ -21,8 +25,15 @@ public class SnsTopic {
   @JsonProperty("Message")
   private String message;
 
-  public SnsTopic(String json) {
-    setAllValues(json);
+  public static SnsTopic fromJson(String json) {
+    SnsTopic topic = null;
+    try {
+      topic = mapper.readValue(json, SnsTopic.class);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return topic;
   }
 
   public String getMessageId() {
@@ -57,20 +68,12 @@ public class SnsTopic {
     this.timestamp = timestamp;
   }
 
-  public void setAllValues(String json) {
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      Map<String, String> map = mapper.readValue(json,
-          new TypeReference<HashMap<String, String>>() {
-          });
 
-      this.setMessageId(map.get("MessageId"));
-      this.setMessage(map.get("Message"));
-      this.setTopicArn(map.get("TopicArn"));
-      this.setTimestamp(map.get("Timestamp"));
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  // TODO extract to helper
+  private static ObjectMapper customObjectMapper(ObjectMapper mapper) {
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+    return mapper;
   }
 }

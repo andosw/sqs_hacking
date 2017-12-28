@@ -2,6 +2,7 @@ package com.seana;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -9,11 +10,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SesFeedback {
+
+  private static final ObjectMapper mapper = customObjectMapper(new ObjectMapper());
+
   @JsonProperty("notificationType")
   private String notificationType;
 
-  public SesFeedback(String json) {
-    setAllValues(json);
+  public static SesFeedback fromJson(String json) {
+    SesFeedback feedback= null;
+    try {
+      feedback= mapper.readValue(json, SesFeedback.class);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return feedback;
   }
 
   public String getNotificationType() {
@@ -24,17 +35,10 @@ public class SesFeedback {
     this.notificationType = notificationType;
   }
 
-  public void setAllValues(String json) {
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      Map<String, String> map = mapper.readValue(json,
-          new TypeReference<HashMap<String, String>>() {
-          });
+  // TODO extract to helper
+  private static ObjectMapper customObjectMapper(ObjectMapper mapper) {
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-      this.setNotificationType(map.get("notificationType"));
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    return mapper;
   }
 }
