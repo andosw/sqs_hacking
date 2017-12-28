@@ -4,15 +4,9 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SQSClient {
 
@@ -31,21 +25,48 @@ public class SQSClient {
 
     System.out.println("Inner messages... ");
 
-    messages.stream().map(Message::getBody).forEach(s -> {
-      InputStream bytes = new ByteArrayInputStream(s.getBytes());
-      Map messageMap = null;
-      try {
-        messageMap = new ObjectMapper().readValue(bytes, Map.class);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+//    messages.stream().map(m -> {m.});
 
-      System.out.println(Arrays.toString(messageMap.entrySet().toArray()));
-    });
+    //      InputStream bytes = new ByteArrayInputStream(s.getBytes());
+//      Map messageMap = null;
+//      try {
+//        messageMap = new ObjectMapper().readValue(bytes, Map.class);
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//
+//      System.out.println(Arrays.toString(messageMap.entrySet().toArray()));
+//    messages.stream()
+//        .map(Message::getBody)
+//        .map(SnsNotification::new)
+//        .forEach(notification -> {
+//          System.out.println("Timestamp --> " + notification.getTimestamp());
+//          // SesFeedback sesNotification = new SesFeedback(notification.getMessage());
+//          SesFeedback sesNotification = notification.getMessage();
+//          System.out.println("SES Notification Type --> " + sesNotification.getNotificationType());
+//        });
+
+    messages.stream()
+        .map(Message::getBody)
+        .map(SnsTopic::new)
+        .forEach(notification -> {
+          System.out.println("Timestamp --> " + notification.getTimestamp());
+          // SesFeedback sesNotification = new SesFeedback(notification.getMessage());
+//          SesFeedback sesNotification = notification.getMessage();
+          System.out.println("SES Notification String --> " + notification.getMessage());
+        });
+
+    // https://forums.aws.amazon.com/thread.jspa?messageID=607800
+
+
+//    Notification noti = toObject(jsonString, Notification.class);
+//    Message msg = toObject(noti.getMessage(), Message.class);
+//    noti.setObjMessage(msg);
 
 //    JSONParser parser = new JSONParser();
 //    JSONObject json = (JSONObject) parser.parse(stringToParse);
 
 
   }
+
 }
