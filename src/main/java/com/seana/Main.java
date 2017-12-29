@@ -6,7 +6,7 @@ public class Main {
 
         System.out.println("Hello World");
         SQSClient client = new SQSClient();
-        client.printMessages();
+        client.getBounceMessages();
 
         System.out.println("Exiting");
     }

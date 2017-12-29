@@ -8,32 +8,28 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 public class SQSClient {
 
   private final AmazonSQS sqs;
   private static final String DELIVERY_QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/547897653276/ses_delivery_queue";
+  private static final String BOUNCE_QUEUE_URL   = "https://sqs.us-west-2.amazonaws.com/547897653276/ses_bounce_queue";
+
   private static final ObjectMapper mapper = customObjectMapper(new ObjectMapper());
 
   public SQSClient() {
     sqs = AmazonSQSClientBuilder.standard().withRegion(Regions.US_WEST_2).build();
   }
 
-  public void printMessages() {
+  public void getDeliveryMessages() {
     List<Message> messages = sqs.receiveMessage(DELIVERY_QUEUE_URL).getMessages();
     System.out.println("Message length: " + messages.size());
 
     // https://forums.aws.amazon.com/thread.jspa?messageID=607800
     messages.stream()
         .map(Message::getBody)
-        .map(body -> {
-          System.out.println("SQS Body -> " + body);
-          return body;
-        })
+        .peek(body -> System.out.println("SQS Body -> " + body))
         .map(body -> JsonDeserializer.fromJson(body, SnsTopic.class))
         .map(topic -> {
           System.out.println("Topic Timestamp --> " + topic.getTimestamp());
@@ -52,6 +48,27 @@ public class SQSClient {
           System.out.println("Delivery Report: " + sesDeliveryReport.getReportingMTA());
         });
     // .forEach(sesMailReport -> System.out.println(sesMailReport.getSource()));
+  }
+
+  public void getBounceMessages() {
+    System.out.println("Fetching Bounce Messages...");
+    List<Message> messages = sqs.receiveMessage(BOUNCE_QUEUE_URL).getMessages();
+    System.out.println("Message length: " + messages.size());
+
+    messages.stream()
+      .peek(msg -> System.out.println("SQS Message: " + msg))
+      .map(Message::getBody)
+      .map(body -> JsonDeserializer.fromJson(body, SnsTopic.class))
+      .map(topic -> JsonDeserializer.fromJson(topic.getMessage(), SesFeedback.class))
+      .forEach(sesFeedback -> {
+        System.out.println("SES Feedback type: " + sesFeedback.getNotificationType());
+
+        SesBounceReport sesBounceReport = sesFeedback.getBounce();
+        System.out.println("Bounce Report: " + sesBounceReport.getBounceType());
+
+        SesMailReport sesMailReport = sesFeedback.getMail();
+        System.out.println("Mail Report: " + sesMailReport.getHeaders());
+      });
   }
 
   private static ObjectMapper customObjectMapper(ObjectMapper mapper) {
