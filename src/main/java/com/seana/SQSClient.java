@@ -43,12 +43,14 @@ public class SQSClient {
           System.out.println("SesFeedback -> " + sesFeedback);
           return sesFeedback;
         })
-        .map(sesFeedback -> {
+        .forEach(sesFeedback -> {
           System.out.println("SES Feedback type: " + sesFeedback.getNotificationType());
+          SesMailReport sesMailReport = sesFeedback.getMail();
+          System.out.println("Mail Report: " + sesMailReport.getHeaders());
 
-          return sesFeedback.getMail();
-        })
-        .forEach(mailReport -> System.out.println("Mail Report: " + Arrays.toString(mailReport.getDestination())));
+          SesDeliveryReport sesDeliveryReport = sesFeedback.getDelivery();
+          System.out.println("Delivery Report: " + sesDeliveryReport.getReportingMTA());
+        });
     // .forEach(sesMailReport -> System.out.println(sesMailReport.getSource()));
   }
 

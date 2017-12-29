@@ -2,6 +2,9 @@ package com.seana;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+import java.util.Map;
+
 public class SesMailReport {
   @JsonProperty("timestamp")
   private String timestamp;
@@ -17,6 +20,9 @@ public class SesMailReport {
 
   @JsonProperty("destination")
   private String[] destination;
+
+  @JsonProperty("headers")
+  private List<Map<String, String>> headers;
 
   public String getTimestamp() {
     return timestamp;
@@ -56,5 +62,13 @@ public class SesMailReport {
 
   public void setDestination(String[] destination) {
     this.destination = destination;
+  }
+
+  public List<Map<String, String>> getHeaders() {
+    return headers;
+  }
+
+  public void setHeaders(List<Map<String, String>> headers) {
+    this.headers = headers;
   }
 }

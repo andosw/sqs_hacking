@@ -9,6 +9,9 @@ public class SesFeedback {
   @JsonProperty("mail")
   private SesMailReport mail;
 
+  @JsonProperty("delivery")
+  private SesDeliveryReport delivery;
+
   public String getNotificationType() {
     return notificationType;
   }
@@ -23,5 +26,13 @@ public class SesFeedback {
 
   public void setMail(SesMailReport mail) {
     this.mail = mail;
+  }
+
+  public SesDeliveryReport getDelivery() {
+    return delivery;
+  }
+
+  public void setDelivery(SesDeliveryReport delivery) {
+    this.delivery = delivery;
   }
 }
