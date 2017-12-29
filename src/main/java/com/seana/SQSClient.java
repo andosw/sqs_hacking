@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class SQSClient {
@@ -37,6 +38,7 @@ public class SQSClient {
         .map(topic -> {
           System.out.println("Topic Timestamp --> " + topic.getTimestamp());
 
+          // TODO: figure out how to automatically parse inner Message like the inner mail
           SesFeedback sesFeedback = JsonDeserializer.fromJson(topic.getMessage(), SesFeedback.class);
           System.out.println("SesFeedback -> " + sesFeedback);
           return sesFeedback;
@@ -46,7 +48,7 @@ public class SQSClient {
 
           return sesFeedback.getMail();
         })
-        .forEach(mailReport -> System.out.println("Mail Report: " + mailReport.getSource()));
+        .forEach(mailReport -> System.out.println("Mail Report: " + Arrays.toString(mailReport.getDestination())));
     // .forEach(sesMailReport -> System.out.println(sesMailReport.getSource()));
   }
 

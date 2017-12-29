@@ -9,6 +9,15 @@ public class SesMailReport {
   @JsonProperty("source")
   private String source;
 
+  @JsonProperty("sourceIp")
+  private String sourceIp;
+
+  @JsonProperty("messageId")
+  private String messageId;
+
+  @JsonProperty("destination")
+  private String[] destination;
+
   public String getTimestamp() {
     return timestamp;
   }
@@ -23,5 +32,29 @@ public class SesMailReport {
 
   public void setSource(String source) {
     this.source = source;
+  }
+
+  public String getSourceIp() {
+    return sourceIp;
+  }
+
+  public void setSourceIp(String sourceIp) {
+    this.sourceIp = sourceIp;
+  }
+
+  public String getMessageId() {
+    return messageId;
+  }
+
+  public void setMessageId(String messageId) {
+    this.messageId = messageId;
+  }
+
+  public String[] getDestination() {
+    return destination;
+  }
+
+  public void setDestination(String[] destination) {
+    this.destination = destination;
   }
 }
