@@ -29,6 +29,10 @@ public class SQSClient {
     // https://forums.aws.amazon.com/thread.jspa?messageID=607800
     messages.stream()
         .map(Message::getBody)
+        .map(body -> {
+          System.out.println("SQS Body -> " + body);
+          return body;
+        })
         .map(body -> JsonDeserializer.fromJson(body, SnsTopic.class))
         .map(topic -> {
           System.out.println("Topic Timestamp --> " + topic.getTimestamp());
@@ -40,10 +44,9 @@ public class SQSClient {
         .map(sesFeedback -> {
           System.out.println("SES Feedback type: " + sesFeedback.getNotificationType());
 
-//          return JsonDeserializer.fromJson(sesFeedback.getMail(), SesMailReport.class);
-          return sesFeedback;
+          return sesFeedback.getMail();
         })
-        .forEach(System.out::println);
+        .forEach(mailReport -> System.out.println("Mail Report: " + mailReport.getSource()));
     // .forEach(sesMailReport -> System.out.println(sesMailReport.getSource()));
   }
 
