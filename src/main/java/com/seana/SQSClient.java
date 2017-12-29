@@ -4,14 +4,19 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 
+import java.io.IOException;
 import java.util.List;
 
 public class SQSClient {
 
   private final AmazonSQS sqs;
   private static final String DELIVERY_QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/547897653276/ses_delivery_queue";
+  private static final ObjectMapper mapper = customObjectMapper(new ObjectMapper());
 
   public SQSClient() {
     sqs = AmazonSQSClientBuilder.standard().withRegion(Regions.US_WEST_2).build();
@@ -21,55 +26,31 @@ public class SQSClient {
     List<Message> messages = sqs.receiveMessage(DELIVERY_QUEUE_URL).getMessages();
     System.out.println("Message length: " + messages.size());
 
-    messages.forEach(System.out::println);
-
-    System.out.println("Inner messages... ");
-
-//    messages.stream().map(m -> {m.});
-
-    //      InputStream bytes = new ByteArrayInputStream(s.getBytes());
-//      Map messageMap = null;
-//      try {
-//        messageMap = new ObjectMapper().readValue(bytes, Map.class);
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//      }
-//
-//      System.out.println(Arrays.toString(messageMap.entrySet().toArray()));
-//    messages.stream()
-//        .map(Message::getBody)
-//        .map(SnsNotification::new)
-//        .forEach(notification -> {
-//          System.out.println("Timestamp --> " + notification.getTimestamp());
-//          // SesFeedback sesNotification = new SesFeedback(notification.getMessage());
-//          SesFeedback sesNotification = notification.getMessage();
-//          System.out.println("SES Notification Type --> " + sesNotification.getNotificationType());
-//        });
-
+    // https://forums.aws.amazon.com/thread.jspa?messageID=607800
     messages.stream()
         .map(Message::getBody)
-        .map(SnsTopic::fromJson)
-        .forEach(notification -> {
-          System.out.println("Timestamp --> " + notification.getTimestamp());
-          // SesFeedback sesNotification = new SesFeedback(notification.getMessage());
-//          SesFeedback sesNotification = notification.getMessage();
-          System.out.println("SES Notification String --> " + notification.getMessage());
+        .map(body -> JsonDeserializer.fromJson(body, SnsTopic.class))
+        .map(topic -> {
+          System.out.println("Topic Timestamp --> " + topic.getTimestamp());
 
-          SesFeedback feedback = SesFeedback.fromJson(notification.getMessage());
-          System.out.println("SES Feedback Notification -> " + feedback.getNotificationType());
-        });
+          SesFeedback sesFeedback = JsonDeserializer.fromJson(topic.getMessage(), SesFeedback.class);
+          System.out.println("SesFeedback -> " + sesFeedback);
+          return sesFeedback;
+        })
+        .map(sesFeedback -> {
+          System.out.println("SES Feedback type: " + sesFeedback.getNotificationType());
 
-    // https://forums.aws.amazon.com/thread.jspa?messageID=607800
+//          return JsonDeserializer.fromJson(sesFeedback.getMail(), SesMailReport.class);
+          return sesFeedback;
+        })
+        .forEach(System.out::println);
+    // .forEach(sesMailReport -> System.out.println(sesMailReport.getSource()));
+  }
 
+  private static ObjectMapper customObjectMapper(ObjectMapper mapper) {
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-//    Notification noti = toObject(jsonString, Notification.class);
-//    Message msg = toObject(noti.getMessage(), Message.class);
-//    noti.setObjMessage(msg);
-
-//    JSONParser parser = new JSONParser();
-//    JSONObject json = (JSONObject) parser.parse(stringToParse);
-
-
+    return mapper;
   }
 
 }
